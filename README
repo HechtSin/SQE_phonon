@@ -1,0 +1,4 @@
+This is a simple script to plot the dynamical structure factor using Phonopy force_sets/force_constants
+
+The calculation of dynamical structure factor is as same as Phonopy website:
+http://phonopy.github.io/phonopy/dynamic-structure-factor.html
