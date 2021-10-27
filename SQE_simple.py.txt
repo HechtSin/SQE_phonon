@@ -1,0 +1,195 @@
+#!/home/xing/Downloads/software/anaconda3/bin/python3
+
+import numpy as np
+from phonopy import load
+from phonopy.spectrum.dynamic_structure_factor import atomic_form_factor_WK1995
+from phonopy.phonon.degeneracy import degenerate_sets
+from phonopy.units import THzToEv
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import matplotlib.pylab as pl
+import matplotlib
+from matplotlib import colors
+from matplotlib.colors import ListedColormap
+from scipy import signal
+from scipy.stats import multivariate_normal
+
+## The script below are mainly copied from Phonopy website
+## But I changed something to make it output Q and SQE for plotting
+
+def get_AFF_func(f_params):
+    def func(symbol, Q):
+        return atomic_form_factor_WK1995(Q, f_params[symbol])
+    return func
+
+def run(phonon,
+        Qpoints,
+        temperature,
+        atomic_form_factor_func=None,
+        scattering_lengths=None):
+    # Transformation to the Q-points in reciprocal primitive basis vectors
+    Q_prim = np.dot(Qpoints, phonon.primitive_matrix)
+    # Q_prim must be passed to the phonopy dynamical structure factor code.
+    phonon.run_dynamic_structure_factor(
+        Q_prim,
+        temperature,
+        atomic_form_factor_func=atomic_form_factor_func,
+        scattering_lengths=scattering_lengths,
+        freq_min=1e-3)
+    dsf = phonon.dynamic_structure_factor
+    q_cartesian = np.dot(dsf.qpoints,
+                         np.linalg.inv(phonon.primitive.get_cell()).T)
+    distances = np.sqrt((q_cartesian ** 2).sum(axis=1))
+
+    #print("# [1] Distance from Gamma point,")
+    #print("# [2-4] Q-points in cubic reciprocal space, ")
+    #print("# [5-8] 4 band frequencies in meV (becaues of degeneracy), ")
+    #print("# [9-12] 4 dynamic structure factors.")
+    #print("# For degenerate bands, dynamic structure factors are summed.")
+    #print("")
+
+    Qpoints = np.array(Qpoints)
+    #print (dsf.frequencies.shape)
+    #print (dsf.dynamic_structure_factors.shape)
+    # Use as iterator
+    #for i in range(len(dsf.frequencies.shape[0])):
+    #    SandE = []
+    #    for j in range(len(dsf.frequencies.shape[1])):
+    #        SandE.append([dsf.frequencies[i,j],Qpoints[i],dsf.dynamic_structure_factors[i,j]])
+
+    SandE = np.array([dsf.frequencies,dsf.dynamic_structure_factors])
+    return SandE
+
+
+if __name__ == '__main__':
+    phonon = load(supercell_matrix=[2, 2, 2],
+                  primitive_matrix=[[1,0,0],[0,1,0],[0,0,1]],
+                  unitcell_filename="POSCAR",
+                  force_sets_filename='FORCE_SETS',
+                  force_constants_filename=None
+                  )
+
+    q_start = np.array([4,0,0])
+    q_end = np.array([4.5,0,0])
+    band = []
+    Qpoints = []
+
+    for i in range(201):
+        band.append(list(q_start+(q_end-q_start)/200*i))
+    Qpoints = band
+    #print (Qpoints)
+
+    # Mesh sampling phonon calculation is needed for Debye-Waller factor.
+    # This must be done with is_mesh_symmetry=False and with_eigenvectors=True.
+    mesh = [11, 11, 11]
+    phonon.run_mesh(mesh,
+                    is_mesh_symmetry=False,
+                    with_eigenvectors=True)
+    temperature = 300
+
+    IXS = False
+
+    if IXS:
+        # For IXS, atomic form factor is needed and given as a function as
+        # a parameter.
+        # D. Waasmaier and A. Kirfel, Acta Cryst. A51, 416 (1995)
+        # f(Q) = \sum_i a_i \exp((-b_i Q^2) + c
+        # Q is in angstron^-1
+        # a1, b1, a2, b2, a3, b3, a4, b4, a5, b5, c
+        f_params = {'Na': [3.148690, 2.594987, 4.073989, 6.046925,
+                           0.767888, 0.070139, 0.995612, 14.1226457,
+                           0.968249, 0.217037, 0.045300],  # 1+
+                    'Cl': [1.061802, 0.144727, 7.139886, 1.171795,
+                           6.524271, 19.467656, 2.355626, 60.320301,
+                           35.829404, 0.000436, -34.916604]}  # 1-
+        AFF_func = get_AFF_func(f_params)
+        run(phonon,
+            Qpoints,
+            temperature,
+            atomic_form_factor_func=AFF_func)
+    else:
+        # For INS, scattering length has to be given.
+        # The following values is obtained at (Coh b)
+        # https://www.nist.gov/ncnr/neutron-scattering-lengths-list
+        output = run(phonon,
+                     Qpoints,
+                     temperature,
+                     scattering_lengths={'Na': 3.63, 'Cl': 9.5770})
+
+
+    #print (output.shape)
+
+    ## output has shape as (2,len(Qpoints),branches), the first array is for frequency and the second is for SQE
+    #Qpoints = np.array(Qpoints)
+    #print (Qpoints)
+    #print (Qpoints[:,1].shape)
+    #print (output[0,:,1].shape)
+    #for i in range(24):
+    #    plt.scatter(Qpoints[:,1],output[0,:,i])
+
+
+    ## Bin the SQE ##
+    MinimumEnergy = 0
+    MaximumEnergy = 10
+    EnergyStep = 0.05
+    deltae = EnergyStep 
+    ne = int(1 + (MaximumEnergy - MinimumEnergy)/EnergyStep)
+    #print (ne)
+    Evec = [MinimumEnergy,EnergyStep,ne, MaximumEnergy]
+    
+    nql = 201 
+    BinnedSQE=np.zeros((int(nql),int(ne)))
+    #print (BinnedSQE.shape)
+
+    ntotal = 0
+    #print (output.shape)
+    for ih in range(nql):
+        for j in range(len(output[0,0,:])):
+            EIndex=int(round(output[0][ih][j]/deltae))
+            if EIndex < ne :
+                BinnedSQE[ih,EIndex]+=output[1][ih][j]
+                #ntotal=ntotal+1
+                #if (ntotal%1000==0):#print status only every 1000 points
+                #    print (ntotal,' of ',nqtot,' ',ntotal*100.0/nqtot,' percent')
+    
+
+    ###
+    #print (np.log10(BinnedSQE)) 
+    mapName = 'viridis'
+
+    zeromask = np.where(BinnedSQE == 0.0)
+    BinnedSQE[zeromask] = 1e-15
+
+    ## 2d gaussian convolution ## 
+    #x, y = np.meshgrid(np.linspace(0,nql,nql),np.linspace(0,ne,ne))
+    #pos = np.dstack((x,y))
+    #d = np.sqrt(x*x+y*y)
+    #sigma, mu = 1, 0
+    #g = np.exp(-( (d-mu)**2 / ( 2.0 * sigma**2 ) ))
+    #var = multivariate_normal(mean=[0,0],cov=[[1,0],[0,1]])
+    #g = var.pdf(pos)
+
+    #temporary = signal.convolve2d(BinnedSQE,g,boundary = 'fill', mode='full') 
+    #zeromask = np.where(temporary == 0.0)
+    #temporary[zeromask] = 1e-15
+
+    #plotVals = pl.log10(temporary.T)
+    #####
+
+    plotVals = pl.log10(BinnedSQE.T)
+    norm=colors.Normalize(np.min(plotVals),np.max(plotVals))
+
+    plt.imshow(plotVals,
+               #extent=(xmin,xmax,ymin,ymax),
+               #aspect='auto',
+               interpolation='bicubic',
+               norm=norm,
+               vmin = -5.5,
+               vmax = -3.5,
+               cmap=mapName)
+    plt.colorbar()
+    plt.xlim(0,nql)
+    plt.ylim(0,ne)
+    #plt.savefig('H00_SQE.png')
+    plt.show()
+
