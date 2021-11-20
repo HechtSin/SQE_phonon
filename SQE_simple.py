@@ -175,9 +175,9 @@ if __name__ == '__main__':
     #####
     #plotVals = pl.log10(BinnedSQE.T)
     norm=colors.Normalize(np.min(plotVals),np.max(plotVals))
-    figure = plt.figure(figsize=(10,8))
+    figure, ax = plt.subplots(figsize=(10,8))
 
-    im = plt.imshow(plotVals,
+    im = ax.imshow(plotVals,
                #extent=(xmin,xmax,ymin,ymax),
                aspect='auto',
                interpolation='bicubic',
@@ -186,28 +186,28 @@ if __name__ == '__main__':
                vmax = colormax,
                cmap=mapName)
 
-    xpos = np.linspace(0,nql-1,6)
-    q_range = q_end-q_start
-    index = np.nonzero(q_range)
-    x_max = q_range[index[0][0]]
-    xticks = np.linspace(0,x_max,6)
-    fmt = lambda x: "{:.2f}".format(x) # the function to only keep two digits
-    plt.xticks(xpos,[fmt(i) for i in xticks])
+    #xpos = np.linspace(0,nql-1,6)
+    #q_range = q_end-q_start
+    #index = np.nonzero(q_range)
+    #x_max = q_range[index[0][0]]
+    #xticks = np.linspace(0,x_max,6)
+    #fmt = lambda x: "{:.2f}".format(x) # the function to only keep two digits
+    #plt.xticks(xpos,[fmt(i) for i in xticks])
    
-    ybin_num = 6 
-    ypos = np.linspace(0,ne,ybin_num)
-    yticks = np.linspace(MinimumEnergy,MaximumEnergy,ybin_num)
-    fmt = lambda x: "{:.1f}".format(x) # the function to only keep two digits
-    plt.yticks(ypos,[fmt(i) for i in yticks])
+    #ybin_num = 6 
+    #ypos = np.linspace(0,ne,ybin_num)
+    #yticks = np.linspace(MinimumEnergy,MaximumEnergy,ybin_num)
+    #fmt = lambda x: "{:.1f}".format(x) # the function to only keep two digits
+    #plt.yticks(ypos,[fmt(i) for i in yticks])
 
-    plt.xlim(0,nql-1)
-    plt.ylim(0,ne)
+    ax.set_xlim(0,nql-1)
+    ax.set_ylim(0,ne)
 
-    plt.xlabel(xlabels)
-    plt.ylabel('Energy (meV)')
+    ax.set_xlabel(xlabels)
+    ax.set_ylabel('Energy (meV)')
 
     cbaxes = figure.add_axes([0.90, 0.23, 0.03, 0.6])
-    cb2 = plt.colorbar(im,cax=cbaxes,orientation = 'vertical')
+    cb2 = figure.colorbar(im,cax=cbaxes,orientation = 'vertical')
     tick_locator = ticker.MaxNLocator(nbins=int((colormax-colormin)//1))
     cb2.locator = tick_locator
     cb2.update_ticks()
