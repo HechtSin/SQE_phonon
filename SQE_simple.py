@@ -186,19 +186,21 @@ if __name__ == '__main__':
                vmax = colormax,
                cmap=mapName)
 
-    #xpos = np.linspace(0,nql-1,6)
-    #q_range = q_end-q_start
-    #index = np.nonzero(q_range)
-    #x_max = q_range[index[0][0]]
-    #xticks = np.linspace(0,x_max,6)
-    #fmt = lambda x: "{:.2f}".format(x) # the function to only keep two digits
-    #plt.xticks(xpos,[fmt(i) for i in xticks])
-   
-    #ybin_num = 6 
-    #ypos = np.linspace(0,ne,ybin_num)
-    #yticks = np.linspace(MinimumEnergy,MaximumEnergy,ybin_num)
-    #fmt = lambda x: "{:.1f}".format(x) # the function to only keep two digits
-    #plt.yticks(ypos,[fmt(i) for i in yticks])
+    xpos = np.linspace(0,nql-1,6)
+    q_range = q_end-q_start
+    index = np.nonzero(q_range)
+    x_max = q_range[index[0][0]]
+    xticks = np.linspace(0,x_max,6)
+    fmt = lambda x: "{:.2f}".format(x) # the function to only keep two digits
+    ax.set_xticks(xpos)
+    ax.set_xticklabels([fmt(i) for i in xticks])
+ 
+    ybin_num = 6 
+    ypos = np.linspace(0,ne,ybin_num)
+    yticks = np.linspace(MinimumEnergy,MaximumEnergy,ybin_num)
+    fmt = lambda x: "{:.1f}".format(x) # the function to only keep two digits
+    ax.set_yticks(ypos)
+    ax.set_yticklabels([fmt(i) for i in yticks])
 
     ax.set_xlim(0,nql-1)
     ax.set_ylim(0,ne)
