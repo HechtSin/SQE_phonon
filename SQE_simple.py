@@ -30,7 +30,8 @@ xlabels = '4 K 0'
 savefigas = '4K0_noborn.png'
 colormax = 2
 colormin = -1
-broadening_factor = 2 ## I'm using a gaussian filter to do 2D broadening. 1/2 is good number 
+broadening_factor = 2 ## I'm using a gaussian filter to do 2D broadening. 1/2 is good number
+num_ybins = 6 ## number of yticks 
 #### END OF USER INPUTS ####
 
 ## The script below are mainly copied from Phonopy website
@@ -190,12 +191,14 @@ if __name__ == '__main__':
     q_range = q_end-q_start
     index = np.nonzero(q_range)
     x_max = q_range[index[0][0]]
-    xticks = np.linspace(0,x_max,6)
-    fmt = lambda x: "{:.2f}".format(x) # the function to only keep two digits
-    ax.set_xticks(xpos)
-    ax.set_xticklabels([fmt(i) for i in xticks])
+    #xticks = np.linspace(0,x_max,6)
+    #fmt = lambda x: "{:.2f}".format(x) # the function to only keep two digits
+    #ax.set_xticks(xpos)
+    #ax.set_xticklabels([fmt(i) for i in xticks])
+    ax.set_xticks([0,nql-1])
+    ax.set_xticklabels([q_start,q_end])
  
-    ybin_num = 6 
+    ybin_num = num_ybins
     ypos = np.linspace(0,ne,ybin_num)
     yticks = np.linspace(MinimumEnergy,MaximumEnergy,ybin_num)
     fmt = lambda x: "{:.1f}".format(x) # the function to only keep two digits
