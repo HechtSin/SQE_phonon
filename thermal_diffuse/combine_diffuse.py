@@ -14,6 +14,7 @@ for i in range(41):
     #diffuse[:,i] = np.sum(sqe,axis=1)  # 0-25meV
 np.savetxt('TDS_0_25meV.txt',diffuse)
 
+
 #SQE = pl.log10(np.load('diffuse_HK1_0-2meV.npy'))
 #norm=colors.Normalize(np.min(SQE),np.max(SQE))
 vmin = 1.8
