@@ -173,7 +173,7 @@ if __name__ == '__main__':
     Evec = [MinimumEnergy,EnergyStep,ne, MaximumEnergy]
     evalues = np.arange(E_min,ne*deltae+deltae,deltae)    
 
-    nql = Q_steps 
+    nql = Q_steps+1
     BinnedSQE=np.zeros((int(nql),int(ne)))
 
     ntotal = 0

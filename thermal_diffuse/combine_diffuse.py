@@ -6,9 +6,9 @@ import time
 from matplotlib import colors
 plt.rcParams.update({'font.size': 18})
 fig, ax = plt.subplots(figsize=(14,10))
-diffuse = np.zeros([81,81])
-for i in range(81):
-    temp = "sqe_%.2f.txt" % (i/20.0)
+diffuse = np.zeros([41,41])
+for i in range(41):
+    temp = "sqe_%.2f.txt" % (i/10.0)
     sqe = np.loadtxt(temp)
     diffuse[:,i] = np.sum(sqe[0:1251,:],axis=0)  # 0-25 meV
     #diffuse[:,i] = np.sum(sqe,axis=1)  # 0-25meV
@@ -23,13 +23,13 @@ tds = ax.imshow(np.log10(diffuse),aspect='auto',interpolation='bicubic',origin='
 plt.colorbar(tds)
 
 ## change xtick
-xpos = np.linspace(0,81,5)
+xpos = np.linspace(0,40,5)
 xl = np.linspace(0,4,5)
 ax.set_xticks(xpos)
 ax.set_xticklabels(xl)
 
 ## change ytick
-ypos = np.linspace(0,81,5)
+ypos = np.linspace(0,40,5)
 yl = np.linspace(0,4,5)
 ax.set_yticks(ypos)
 ax.set_yticklabels(yl)

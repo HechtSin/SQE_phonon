@@ -25,7 +25,7 @@ forceconstants_file = 'FORCE_CONSTANTS'
 ## Q and E inputs ##
 Q_start = np.array([4.00,0,0]) 
 Q_end = np.array([4.00,0,4]) 
-Q_steps = 81
+Q_steps = 40
 Temperature = 300
 # Neutron coherent scattering length can be found at https://www.ncnr.nist.gov/resources/n-lengths/
 coh_scatter_length ={'Na': 3.63, 'Cl': 9.5770}
@@ -33,7 +33,7 @@ E_min = 0
 E_max = 25
 E_step = 0.02
 xlabels = '[2+H, 2-H, 0] (r.l.u.)'
-savefigas = '2+H_2-H_sqe.png'
+savefigas = 'temp.png'
 colormax = 2
 colormin = 0
 e_resolution = 50 ## unit of E_step
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     zero_index = np.where(Qpoints_abs==0)[0]
     if zero_index.shape[0] !=0:
         Qpoints[zero_index[0]] = np.array([1e-6,1e-6,1e-6])
-    #print (Qpoints)
+    print (Qpoints)
 
     # Mesh sampling phonon calculation is needed for Debye-Waller factor.
     # This must be done with is_mesh_symmetry=False and with_eigenvectors=True.
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     Evec = [MinimumEnergy,EnergyStep,ne, MaximumEnergy]
     evalues = np.arange(E_min,ne*deltae+deltae,deltae)    
 
-    nql = Q_steps 
+    nql = Q_steps+1
     BinnedSQE=np.zeros((int(nql),int(ne)))
 
     ntotal = 0

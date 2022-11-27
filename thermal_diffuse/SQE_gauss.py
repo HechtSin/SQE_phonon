@@ -25,7 +25,7 @@ forceconstants_file = 'FORCE_CONSTANTS'
 ## Q and E inputs ##
 Q_start = np.array([1,3,0]) # Q bands are in respect of primitive cell if you give primitive_cell
 Q_end = np.array([3,1,0])
-Q_steps = 81
+Q_steps = 40
 Temperature = 300
 # Neutron coherent scattering length can be found at https://www.ncnr.nist.gov/resources/n-lengths/
 coh_scatter_length ={'Na': 3.63, 'Cl': 9.5770}
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     Evec = [MinimumEnergy,EnergyStep,ne, MaximumEnergy]
     evalues = np.arange(E_min,ne*deltae+deltae,deltae)    
 
-    nql = Q_steps 
+    nql = Q_steps+1
     BinnedSQE=np.zeros((int(nql),int(ne)))
 
     ntotal = 0
