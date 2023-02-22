@@ -7,3 +7,5 @@ If BORN file is within the same folder, it seems it can include LO-TO splitting 
 
 SQE folder is for SQE simulation
 Thermal_diffuse folder utilizes SQE script to integrate over energy to calculate thermal diffuse patterns
+
+It seems there is some band folding issue after phonopy version 2.16.0. Please use 2.15.1 or 2.15.0 for this script.

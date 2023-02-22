@@ -1,4 +1,3 @@
-#!/home/xing/Downloads/software/anaconda3/bin/python3
 import time
 import numpy as np
 from phonopy import load
@@ -10,9 +9,12 @@ from matplotlib.colors import ListedColormap
 import scipy
 from scipy import ndimage
 from matplotlib import ticker
-from constants import THz2meV
+#from constants import THz2meV
 import scipy.linalg
 
+#THz2meV = 108.97077*4.136
+#THz2meV = 6.97*4.136
+THz2meV = 4.136
 plt.rcParams.update({'font.size':24})
 start = time.time()
 
@@ -20,26 +22,29 @@ start = time.time()
 primitive_cell = [[1,0,0],[0,1,0],[0,0,1]]
 supercell = [2,2,2]
 ### Use either FORCE_SETS or FORCE_CONSTANTS ### Put the other one as None 
-forcesets_file = None
-forceconstants_file = 'FORCE_CONSTANTS' 
+forcesets_file = 'FORCE_SETS'
+#forceconstants_file = 'FORCE_CONSTANTS' 
+forceconstants_file = None 
 ## Q and E inputs ##
-Q_start = np.array([1,3,0]) # Q bands are in respect of primitive cell if you give primitive_cell
-Q_end = np.array([3,1,0])
-Q_steps = 200
+Q_start = np.array([4,0,0]) # Q bands are in respect of primitive cell if you give primitive_cell
+Q_end = np.array([4,0,4])
+Q_steps = 201
 Temperature = 300
 # Neutron coherent scattering length can be found at https://www.ncnr.nist.gov/resources/n-lengths/
 coh_scatter_length ={'Na': 3.63, 'Cl': 9.5770}
+
 E_min = 0
-E_max = 25
+E_max = 20
 E_step = 0.02
-xlabels = '[2+H, 2-H, 0] (r.l.u.)'
-savefigas = '2+H_2-H_sqe.png'
-colormax = 2
-colormin = 0
-e_resolution = 50 ## unit of E_step, not meV or THz
+xlabels = '[3, 0, L] (r.l.u.)'
+savefigas = '40L_sqe.png'
+colormax = 1
+colormin = -1
+e_resolution = 40 ## unit of E_step, not meV or THz
+q_resolution = 4 ## unit of Q_step, not r.l.u.
 num_ybins = 6 ## number of yticks 
 ## save txt ##
-savetxt_as = 'temp_sqe.txt'
+savetxt_as = '40L_sqe.txt'
 
 #### END OF USER INPUTS ####
 
@@ -63,7 +68,7 @@ def run(phonon,
         temperature,
         atomic_form_factor_func=atomic_form_factor_func,
         scattering_lengths=scattering_lengths,
-        freq_min=1e-3)
+        freq_min=8e-2)
     dsf = phonon.dynamic_structure_factor
     q_cartesian = np.dot(dsf.qpoints,
                          np.linalg.inv(phonon.primitive.get_cell()).T)
@@ -196,6 +201,11 @@ if __name__ == '__main__':
                 BinnedSQE[ih,EIndex] += output[1][ih][j]
         BinnedSQE[ih,:] = ndimage.gaussian_filter(BinnedSQE[ih,:],e_resolution)
 
+    for temp_q in range(BinnedSQE.shape[1]):
+        BinnedSQE[:,temp_q] = ndimage.gaussian_filter(BinnedSQE[:,temp_q],q_resolution)
+
+
+    #BinnedSQE[BinnedSQE>1e3] = 1e-6
     mapName = 'viridis'
     zeromask = np.where(BinnedSQE == 0.0)
     BinnedSQE[zeromask] = 1e-6
