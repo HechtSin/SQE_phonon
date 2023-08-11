@@ -1,5 +1,7 @@
 Update 08/11/23: Added version to support Quantum Espresso, not only VASP.
 
+Test email
+
 This is a simple script to plot the dynamical structure factor using Phonopy force_sets/force_constants
 
 The calculation of dynamical structure factor is as same as Phonopy website:
